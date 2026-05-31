@@ -54,7 +54,7 @@ async function callOpenAI(key: string, prompt: string): Promise<PersonalityResul
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
     body: JSON.stringify({
-      model: 'gpt-4o-mini',
+      model: 'gpt-4o',
       messages: [{ role: 'user', content: prompt }],
       temperature: 1.0,
       max_tokens: 1024,
@@ -74,7 +74,7 @@ async function callOpenAI(key: string, prompt: string): Promise<PersonalityResul
 
 async function callGemini(key: string, prompt: string): Promise<PersonalityResult> {
   const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -105,7 +105,7 @@ async function callAnthropic(key: string, prompt: string): Promise<PersonalityRe
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model: 'claude-3-haiku-20240307',
+      model: 'claude-sonnet-4-20250514',
       max_tokens: 1024,
       messages: [{ role: 'user', content: prompt }],
     }),

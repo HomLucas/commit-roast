@@ -44,7 +44,7 @@ Return ONLY valid JSON (no markdown, no backticks) with this exact structure:
 }`
 
   const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -61,7 +61,10 @@ Return ONLY valid JSON (no markdown, no backticks) with this exact structure:
   if (!res.ok) {
     const body = await res.text()
     if (res.status === 403 || res.status === 400) {
-      throw new Error('Invalid API key. Check your key at aistudio.google.com.')
+      throw new Error('Invalid API key. Get one free at aistudio.google.com.')
+    }
+    if (res.status === 429) {
+      throw new Error('Gemini API quota exceeded. Add a billing account at console.cloud.google.com/billing (free tier, won\'t charge you) or try again later.')
     }
     throw new Error(`AI error: ${body.slice(0, 200)}`)
   }

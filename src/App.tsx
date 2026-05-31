@@ -1,18 +1,18 @@
 import { useState, useRef } from 'react'
 import { fetchCommits } from './github'
-import { analyzePersonality, type PersonalityResult, type Provider } from './api'
+import { analyzePersonality, type PersonalityResult, type ProviderType } from './api'
 import html2canvas from 'html2canvas'
 import Card from './Card'
 
 const PROVIDERS: { value: Provider; label: string; getKeyUrl: string }[] = [
   { value: 'openai', label: 'OpenAI', getKeyUrl: 'https://platform.openai.com/api-keys' },
-  { value: 'groq', label: 'Groq', getKeyUrl: 'https://console.groq.com/keys' },
+  { value: 'gemini', label: 'Gemini', getKeyUrl: 'https://aistudio.google.com/apikey' },
   { value: 'anthropic', label: 'Anthropic', getKeyUrl: 'https://console.anthropic.com/keys' },
 ]
 
 export default function App() {
   const [username, setUsername] = useState('')
-  const [provider, setProvider] = useState<Provider>('openai')
+  const [provider, setProvider] = useState<ProviderType>('openai')
   const [apiKey, setApiKey] = useState('')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<PersonalityResult | null>(null)
@@ -78,7 +78,7 @@ export default function App() {
         <div className="flex gap-2">
           <select
             value={provider}
-            onChange={(e) => setProvider(e.target.value as Provider)}
+            onChange={(e) => setProvider(e.target.value as ProviderType)}
             className="shrink-0 px-3 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-cyan-500/50"
           >
             {PROVIDERS.map((p) => (

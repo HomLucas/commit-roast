@@ -30,12 +30,12 @@ class AlertResponse(BaseModel):
     origin: str
     destination: Optional[str] = None
     max_price: Optional[float] = None
-    date_range_start: Optional[str] = None
-    date_range_end: Optional[str] = None
+    date_range_start: Optional[datetime] = None
+    date_range_end: Optional[datetime] = None
     is_active: bool
     deal_quality_minimum: str
-    created_at: Optional[str] = None
-    updated_at: Optional[str] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True

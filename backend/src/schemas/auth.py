@@ -20,8 +20,8 @@ class UserResponse(BaseModel):
     is_verified: bool
     role: str
     preferred_currency: str
-    created_at: Optional[str] = None
-    last_login: Optional[str] = None
+    created_at: Optional[datetime] = None
+    last_login: Optional[datetime] = None
 
     class Config:
         from_attributes = True

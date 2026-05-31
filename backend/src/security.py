@@ -1,13 +1,11 @@
 from cryptography.fernet import Fernet
-from passlib.context import CryptContext
+import bcrypt as _bcrypt
 from typing import Optional, Dict, Any
 import hashlib
 import hmac
 import base64
 import secrets
 from src.config import settings
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 class DataEncryption:
@@ -78,11 +76,11 @@ class APIKeyManager:
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    return _bcrypt.checkpw(plain_password.encode(), hashed_password.encode())
 
 
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+    return _bcrypt.hashpw(password.encode(), _bcrypt.gensalt()).decode()
 
 
 def generate_secure_token(length: int = 32) -> str:

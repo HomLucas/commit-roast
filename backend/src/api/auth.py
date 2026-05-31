@@ -85,10 +85,10 @@ async def login(
     await db.commit()
 
     access_token = AuthService.create_access_token(
-        data={"sub": user.id, "email": user.email, "role": user.role.value}
+        data={"sub": str(user.id), "email": user.email, "role": user.role.value}
     )
     refresh_token = AuthService.create_refresh_token(
-        data={"sub": user.id, "type": "refresh"}
+        data={"sub": str(user.id), "type": "refresh"}
     )
 
     return Token(
@@ -110,7 +110,7 @@ async def refresh_token(
 
     await blacklist_token(refresh.refresh_token)
 
-    user_id = payload.get("sub")
+    user_id = int(payload.get("sub"))
     if not user_id:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -127,10 +127,10 @@ async def refresh_token(
         )
 
     new_access_token = AuthService.create_access_token(
-        data={"sub": user.id, "email": user.email, "role": user.role.value}
+        data={"sub": str(user.id), "email": user.email, "role": user.role.value}
     )
     new_refresh_token = AuthService.create_refresh_token(
-        data={"sub": user.id, "type": "refresh"}
+        data={"sub": str(user.id), "type": "refresh"}
     )
 
     return Token(

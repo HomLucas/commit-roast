@@ -6,7 +6,7 @@ import Card from './Card'
 
 const PROVIDERS: { value: Provider; label: string; getKeyUrl: string }[] = [
   { value: 'openai', label: 'OpenAI', getKeyUrl: 'https://platform.openai.com/api-keys' },
-  { value: 'gemini', label: 'Gemini', getKeyUrl: 'https://aistudio.google.com/apikey' },
+  { value: 'groq', label: 'Groq', getKeyUrl: 'https://console.groq.com/keys' },
   { value: 'anthropic', label: 'Anthropic', getKeyUrl: 'https://console.anthropic.com/keys' },
 ]
 

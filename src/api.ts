@@ -13,7 +13,7 @@ export interface PersonalityResult {
   }
 }
 
-export type Provider = 'openai' | 'gemini' | 'anthropic'
+export type Provider = 'openai' | 'groq' | 'anthropic'
 
 function buildPrompt(commits: { message: string; date: string; repo: string }[]): string {
   const text = commits.slice(0, 50).map((c) =>
@@ -44,7 +44,7 @@ Return ONLY valid JSON (no markdown, no backticks) with this exact structure:
 
 async function parseJsonResponse(text: string): Promise<PersonalityResult> {
   const cleaned = text.replace(/```(json)?/g, '').trim()
-  const result: PersonalityResult = JSON.parse(cleaned)
+  const result = JSON.parse(cleaned)
   result.topCommits = result.topCommits?.slice(0, 3) || []
   return result
 }
@@ -53,17 +53,12 @@ async function callOpenAI(key: string, prompt: string): Promise<PersonalityResul
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
-    body: JSON.stringify({
-      model: 'gpt-4o',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 1.0,
-      max_tokens: 1024,
-    }),
+    body: JSON.stringify({ model: 'gpt-4o', messages: [{ role: 'user', content: prompt }], temperature: 1.0, max_tokens: 1024 }),
   })
   if (!res.ok) {
     const body = await res.text()
     if (res.status === 401) throw new Error('Invalid OpenAI key. Get one at platform.openai.com.')
-    if (res.status === 429) throw new Error('OpenAI quota exceeded. Check your billing at platform.openai.com.')
+    if (res.status === 429) throw new Error('OpenAI quota exceeded. Check billing at platform.openai.com.')
     throw new Error(`OpenAI error: ${body.slice(0, 200)}`)
   }
   const data = await res.json()
@@ -72,48 +67,34 @@ async function callOpenAI(key: string, prompt: string): Promise<PersonalityResul
   return parseJsonResponse(text)
 }
 
-async function callGemini(key: string, prompt: string): Promise<PersonalityResult> {
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 1.0, maxOutputTokens: 1024 },
-      }),
-    }
-  )
+async function callGroq(key: string, prompt: string): Promise<PersonalityResult> {
+  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+    body: JSON.stringify({ model: 'llama-3.3-70b-versatile', messages: [{ role: 'user', content: prompt }], temperature: 1.0, max_tokens: 1024 }),
+  })
   if (!res.ok) {
     const body = await res.text()
-    if (res.status === 403 || res.status === 400) throw new Error('Invalid Gemini key. Get one free at aistudio.google.com.')
-    if (res.status === 429) throw new Error('Gemini quota exceeded. Add a billing account at console.cloud.google.com/billing (no charge) or try later.')
-    throw new Error(`Gemini error: ${body.slice(0, 200)}`)
+    if (res.status === 401) throw new Error('Invalid Groq key. Get one free at console.groq.com.')
+    if (res.status === 429) throw new Error('Groq rate limit. Wait a moment or upgrade at console.groq.com.')
+    throw new Error(`Groq error: ${body.slice(0, 200)}`)
   }
   const data = await res.json()
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text
-  if (!text) throw new Error('Gemini returned no response')
+  const text = data?.choices?.[0]?.message?.content
+  if (!text) throw new Error('Groq returned no response')
   return parseJsonResponse(text)
 }
 
 async function callAnthropic(key: string, prompt: string): Promise<PersonalityResult> {
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': key,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1024,
-      messages: [{ role: 'user', content: prompt }],
-    }),
+    headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
+    body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1024, messages: [{ role: 'user', content: prompt }] }),
   })
   if (!res.ok) {
     const body = await res.text()
     if (res.status === 401) throw new Error('Invalid Anthropic key. Get one at console.anthropic.com.')
-    if (res.status === 429) throw new Error('Anthropic quota exceeded. Check your billing at console.anthropic.com.')
+    if (res.status === 429) throw new Error('Anthropic quota exceeded. Check billing at console.anthropic.com.')
     throw new Error(`Anthropic error: ${body.slice(0, 200)}`)
   }
   const data = await res.json()
@@ -128,10 +109,9 @@ export async function analyzePersonality(
   commits: { message: string; date: string; repo: string }[]
 ): Promise<PersonalityResult> {
   const prompt = buildPrompt(commits)
-
   switch (provider) {
     case 'openai': return callOpenAI(apiKey, prompt)
-    case 'gemini': return callGemini(apiKey, prompt)
+    case 'groq': return callGroq(apiKey, prompt)
     case 'anthropic': return callAnthropic(apiKey, prompt)
   }
 }

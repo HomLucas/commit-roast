@@ -16,7 +16,7 @@ export interface PersonalityResult {
 export type ProviderType = 'openai' | 'gemini' | 'anthropic' | 'deepseek'
 
 function buildPrompt(commits: { message: string; date: string; repo: string }[]): string {
-  const text = commits.slice(0, 50).map((c) =>
+  const text = commits.slice(0, 30).map((c) =>
     `- "${c.message}" (${c.date.slice(0, 10)}, repo: ${c.repo})`
   ).join('\n')
 

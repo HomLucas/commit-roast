@@ -6,7 +6,6 @@ export interface CommitData {
 }
 
 export async function fetchCommits(username: string): Promise<CommitData[]> {
-  // Fetch top repos
   const reposRes = await fetch(
     `https://api.github.com/users/${username}/repos?per_page=10&sort=pushed&type=all`
   )
@@ -19,12 +18,14 @@ export async function fetchCommits(username: string): Promise<CommitData[]> {
 
   const allCommits: CommitData[] = []
   const seen = new Set<string>()
+  const MAX_COMMITS = 30
 
-  // Check top 3 repos, 3 commits each = 4 total API calls
-  for (const repo of repos.slice(0, 3)) {
+  for (const repo of repos) {
+    if (allCommits.length >= MAX_COMMITS) break
     try {
+      const needed = MAX_COMMITS - allCommits.length
       const res = await fetch(
-        `https://api.github.com/repos/${repo.full_name}/commits?per_page=3`
+        `https://api.github.com/repos/${repo.full_name}/commits?per_page=${Math.min(needed, 10)}`
       )
       if (!res.ok) continue
       const data: any[] = await res.json()
@@ -39,10 +40,11 @@ export async function fetchCommits(username: string): Promise<CommitData[]> {
           repo: repo.name,
           url: c.html_url || '',
         })
+        if (allCommits.length >= MAX_COMMITS) break
       }
     } catch { /* skip */ }
   }
 
-  if (allCommits.length === 0) throw new Error('No commits found')
-  return allCommits
+  if (allCommits.length < 3) throw new Error('Not enough commits found (need at least 3)')
+  return allCommits.slice(0, MAX_COMMITS)
 }

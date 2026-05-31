@@ -1,8 +1,0 @@
-🔥 {{ deal_quality|title }} Deal Found!
-
-Hi {{ username }},
-
-{{ origin }} → {{ destination }} for {{ price }}
-{% if discount %}Save {{ discount }} off typical prices{% endif %}
-
-View deal: {{ booking_link }}

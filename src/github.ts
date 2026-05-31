@@ -5,11 +5,15 @@ export interface CommitData {
   url: string
 }
 
-export async function fetchCommits(username: string): Promise<CommitData[]> {
+export async function fetchCommits(username: string, token?: string): Promise<CommitData[]> {
+  const headers: Record<string, string> = {}
+  if (token) headers.Authorization = `Bearer ${token}`
+
   const reposRes = await fetch(
-    `https://api.github.com/users/${username}/repos?per_page=10&sort=pushed&type=all`
+    `https://api.github.com/users/${username}/repos?per_page=10&sort=pushed&type=all`,
+    { headers }
   )
-  if (reposRes.status === 403) throw new Error('GitHub API rate limit. Try again later.')
+  if (reposRes.status === 403) throw new Error('GitHub API rate limit. Try again later or add a GitHub token.')
   if (reposRes.status === 404) throw new Error('User not found')
   if (!reposRes.ok) throw new Error(`GitHub error (${reposRes.status})`)
 
@@ -25,7 +29,8 @@ export async function fetchCommits(username: string): Promise<CommitData[]> {
     try {
       const needed = MAX_COMMITS - allCommits.length
       const res = await fetch(
-        `https://api.github.com/repos/${repo.full_name}/commits?per_page=${Math.min(needed, 10)}`
+        `https://api.github.com/repos/${repo.full_name}/commits?per_page=${Math.min(needed, 15)}`,
+        { headers }
       )
       if (!res.ok) continue
       const data: any[] = await res.json()
@@ -46,5 +51,5 @@ export async function fetchCommits(username: string): Promise<CommitData[]> {
   }
 
   if (allCommits.length < 3) throw new Error('Not enough commits found (need at least 3)')
-  return allCommits.slice(0, MAX_COMMITS)
+  return allCommits
 }

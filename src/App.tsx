@@ -8,6 +8,7 @@ const PROVIDERS: { value: Provider; label: string; getKeyUrl: string }[] = [
   { value: 'openai', label: 'OpenAI', getKeyUrl: 'https://platform.openai.com/api-keys' },
   { value: 'gemini', label: 'Gemini', getKeyUrl: 'https://aistudio.google.com/apikey' },
   { value: 'anthropic', label: 'Anthropic', getKeyUrl: 'https://console.anthropic.com/keys' },
+  { value: 'deepseek', label: 'DeepSeek', getKeyUrl: 'https://platform.deepseek.com/api_keys' },
 ]
 
 export default function App() {

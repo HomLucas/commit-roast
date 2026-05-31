@@ -13,7 +13,7 @@ export interface PersonalityResult {
   }
 }
 
-export type ProviderType = 'openai' | 'gemini' | 'anthropic'
+export type ProviderType = 'openai' | 'gemini' | 'anthropic' | 'deepseek'
 
 function buildPrompt(commits: { message: string; date: string; repo: string }[]): string {
   const text = commits.slice(0, 50).map((c) =>
@@ -109,6 +109,24 @@ async function callAnthropic(key: string, prompt: string): Promise<PersonalityRe
   return parseJsonResponse(text)
 }
 
+async function callDeepSeek(key: string, prompt: string): Promise<PersonalityResult> {
+  const res = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+    body: JSON.stringify({ model: 'deepseek-chat', messages: [{ role: 'user', content: prompt }], temperature: 1.0, max_tokens: 1024 }),
+  })
+  if (!res.ok) {
+    const body = await res.text()
+    if (res.status === 401) throw new Error('Invalid DeepSeek key. Get one at platform.deepseek.com.')
+    if (res.status === 429) throw new Error('DeepSeek out of credits. Top up at platform.deepseek.com.')
+    throw new Error(`DeepSeek error: ${body.slice(0, 200)}`)
+  }
+  const data = await res.json()
+  const text = data?.choices?.[0]?.message?.content
+  if (!text) throw new Error('DeepSeek returned no response')
+  return parseJsonResponse(text)
+}
+
 export async function analyzePersonality(
   provider: ProviderType,
   apiKey: string,
@@ -119,5 +137,6 @@ export async function analyzePersonality(
     case 'openai': return callOpenAI(apiKey, prompt)
     case 'gemini': return callGemini(apiKey, prompt)
     case 'anthropic': return callAnthropic(apiKey, prompt)
+    case 'deepseek': return callDeepSeek(apiKey, prompt)
   }
 }

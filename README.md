@@ -1,28 +1,21 @@
-# CommitConfessions 💾
+# Commit Roast 💾
 
-**Your git therapy session.** Paste a GitHub username, get an AI-generated coding personality card.
+**Paste a GitHub username. Get your coding personality roasted by AI.**
 
-[Try it live](https://homlucas.github.io/commit-roast/) (requires a free Gemini API key)
+https://homlucas.github.io/commit-roast/
 
 ## How it works
-1. Enter any GitHub username
-2. Paste your free Gemini API key from [aistudio.google.com](https://aistudio.google.com)
-3. Get a shareable retro-styled card with your coding personality, mood score, and funniest commits
+1. Enter a GitHub username
+2. Paste an API key (OpenAI, Gemini, or Anthropic)
+3. Get a shareable card with your coding personality, mood, and funniest commits
 
-## Built with
-- React + TypeScript + Vite
-- Tailwind CSS (retro vaporwave aesthetic)
-- GitHub API (commit history)
-- Google Gemini 2.0 Flash (personality analysis)
-- html2canvas (PNG export)
-
-## Local development
+## Local dev
 ```bash
 npm install
 npm run dev
 ```
 
-## Deploy to GitHub Pages
+## Deploy
 ```bash
 npm run deploy
 ```

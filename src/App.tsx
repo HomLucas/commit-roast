@@ -46,47 +46,43 @@ export default function App() {
   const downloadCard = async () => {
     if (!cardRef.current) return
     const canvas = await html2canvas(cardRef.current, {
-      backgroundColor: '#0a0a0f',
-      scale: 2,
-      useCORS: true,
+      backgroundColor: '#0a0a0f', scale: 2, useCORS: true,
     })
     const link = document.createElement('a')
-    link.download = `${username}-commitconfessions.png`
+    link.download = `${username}-commitroast.png`
     link.href = canvas.toDataURL()
     link.click()
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center px-4 py-12">
+    <div className="min-h-screen flex flex-col items-center px-4 sm:px-6 py-8 sm:py-16">
       {/* Header */}
-      <div className="text-center mb-12 animate-float">
-        <div className="text-5xl mb-4">💾</div>
-        <h1 className="font-retro text-lg sm:text-xl text-fuchsia-400 mb-3 glitch">
-          COMMITCONFESSIONS
+      <div className="text-center mb-8 sm:mb-12 max-w-lg mx-auto">
+        <div className="text-4xl sm:text-5xl mb-3">💾</div>
+        <h1 className="font-retro text-base sm:text-lg text-fuchsia-400 mb-3 glitch tracking-wide">
+          COMMIT ROAST
         </h1>
-        <p className="text-cyan-300 font-pixel text-lg max-w-md">
-          your git therapy session. paste your username. confess your code sins.
+        <p className="text-cyan-300/80 font-pixel text-base sm:text-lg leading-relaxed">
+          paste a github username. get your coding personality analyzed by ai.
         </p>
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="w-full max-w-md space-y-4 mb-4">
-        <div>
-          <input
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="GitHub username"
-            className="w-full px-4 py-3 bg-black/50 border border-fuchsia-500/30 rounded-lg text-white font-pixel text-lg placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400 focus:shadow-[0_0_15px_rgba(255,0,255,0.2)] transition-all"
-          />
-        </div>
+      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-3">
+        <input
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          placeholder="GitHub username"
+          className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/20 transition-all text-sm"
+        />
         <div className="flex gap-2">
           <select
             value={provider}
             onChange={(e) => setProvider(e.target.value as Provider)}
-            className="px-3 py-3 bg-black/50 border border-cyan-500/30 rounded-lg text-white font-pixel text-sm focus:outline-none focus:border-cyan-400"
+            className="shrink-0 px-3 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-cyan-500/50"
           >
             {PROVIDERS.map((p) => (
-              <option key={p.value} value={p.value} className="bg-black">{p.label}</option>
+              <option key={p.value} value={p.value} className="bg-[#0a0a0f]">{p.label}</option>
             ))}
           </select>
           <input
@@ -94,72 +90,73 @@ export default function App() {
             onChange={(e) => setApiKey(e.target.value)}
             type="password"
             placeholder="API key"
-            className="flex-1 px-4 py-3 bg-black/50 border border-cyan-500/30 rounded-lg text-white font-pixel text-sm placeholder:text-gray-600 focus:outline-none focus:border-cyan-400 focus:shadow-[0_0_15px_rgba(0,255,255,0.2)] transition-all"
+            className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-600 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 transition-all text-sm"
           />
         </div>
-        <p className="text-gray-600 font-pixel text-xs text-center -mt-2">
-          <a href={selected.getKeyUrl} target="_blank" rel="noopener noreferrer" className="text-cyan-500/70 hover:text-cyan-400 underline">Get a {selected.label} key</a>
+        <p className="text-gray-600 text-xs text-center">
+          <a href={selected.getKeyUrl} target="_blank" rel="noopener noreferrer" className="text-cyan-500/60 hover:text-cyan-400 underline underline-offset-2">
+            get a {selected.label} key
+          </a>
         </p>
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-4 bg-gradient-to-r from-fuchsia-600 to-cyan-600 rounded-lg font-retro text-sm text-white hover:from-fuchsia-500 hover:to-cyan-500 disabled:opacity-40 disabled:cursor-not-allowed transition-all card-glow"
+          className="w-full py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-cyan-600 text-white font-semibold text-sm hover:from-fuchsia-500 hover:to-cyan-500 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-lg shadow-fuchsia-500/10"
         >
           {loading ? (
             <span className="flex items-center justify-center gap-2">
-              <span className="animate-spin">◌</span>
-              ANALYZING YOUR SINS...
+              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              analyzing...
             </span>
           ) : (
-            'GENERATE MY CARD'
+            'Roast my commits'
           )}
         </button>
       </form>
 
       {/* Security notice */}
-      <div className="max-w-md text-center mb-8">
-        <p className="text-gray-600 font-pixel text-xs leading-relaxed">
-          🔒 Your API key stays in your browser. It is sent directly to {selected.label}'s API — never stored, logged, or sent anywhere else.
-          {' '}<a href="https://github.com/HomLucas/commit-roast" target="_blank" rel="noopener noreferrer" className="text-cyan-500/70 hover:text-cyan-400 underline">View source</a>
-        </p>
-      </div>
+      <p className="text-gray-600 text-xs text-center mt-6 max-w-sm leading-relaxed">
+        your key is sent directly to {selected.label} from your browser. never stored or logged.
+        {' '}<a href="https://github.com/HomLucas/commit-roast" target="_blank" rel="noopener noreferrer" className="text-cyan-500/60 hover:text-cyan-400 underline underline-offset-2">source</a>
+      </p>
 
       {/* Error */}
       {error && (
-        <div className="text-red-400 font-pixel text-base mb-8 text-center max-w-md bg-red-500/5 border border-red-500/20 rounded-lg p-4">
-          ⚡ {error} ⚡
+        <div className="text-red-400 text-sm mt-6 text-center max-w-sm bg-red-500/5 border border-red-500/10 rounded-xl px-5 py-3">
+          {error}
         </div>
       )}
 
+      {/* Loading */}
       {loading && (
-        <div className="text-cyan-300 font-pixel text-xl animate-flicker mb-8">
-          reading commit history...
-        </div>
+        <p className="text-cyan-300/60 text-sm mt-6 animate-pulse">reading commit history...</p>
       )}
 
+      {/* Result */}
       {result && (
-        <div className="flex flex-col items-center gap-6 w-full max-w-2xl">
+        <div className="flex flex-col items-center gap-5 w-full max-w-lg mt-8">
           <div ref={cardRef} className="w-full">
             <Card username={username} result={result} />
           </div>
-          <div className="flex gap-4">
-            <button onClick={downloadCard} className="px-6 py-3 bg-white/5 border border-cyan-500/30 rounded-lg font-pixel text-cyan-300 hover:bg-white/10 transition-all text-lg">
-              💾 SAVE IMAGE
+          <div className="flex gap-3">
+            <button onClick={downloadCard} className="px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-cyan-300 hover:bg-white/10 transition-all">
+              Download
             </button>
-            <button onClick={() => { setResult(null); setUsername(''); setApiKey('') }} className="px-6 py-3 bg-white/5 border border-fuchsia-500/30 rounded-lg font-pixel text-fuchsia-300 hover:bg-white/10 transition-all text-lg">
-              ↺ TRY AGAIN
+            <button onClick={() => { setResult(null); setUsername(''); setApiKey('') }} className="px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-gray-400 hover:bg-white/10 transition-all">
+              Try another
             </button>
           </div>
-          <p className="text-gray-500 font-pixel text-sm mt-4 text-center">
-            analyzed {commitsCount} commits from @{username} via {selected.label}
+          <p className="text-gray-500 text-xs">
+            analyzed {commitsCount} commits via {selected.label}
           </p>
         </div>
       )}
 
-      <footer className="mt-auto pt-16 pb-6 text-gray-600 font-pixel text-sm text-center">
-        <p>no data is stored. your API key stays on your device.</p>
-        <p className="mt-1">built with React + GitHub API + {selected.label}</p>
-      </footer>
+      {/* Footer */}
+      <p className="text-gray-700 text-xs mt-auto pt-16 pb-6 text-center">
+        no data stored. open source on{' '}
+        <a href="https://github.com/HomLucas/commit-roast" target="_blank" rel="noopener noreferrer" className="text-cyan-500/60 hover:text-cyan-400 underline underline-offset-2">github</a>
+      </p>
     </div>
   )
 }

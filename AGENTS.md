@@ -1,28 +1,20 @@
-# CommitConfessions — Development Notes
-
-## Overview
-A single-page React app (Vite + TypeScript + Tailwind) that analyzes a GitHub user's commit history via Gemini AI and generates a shareable retro-styled personality card.
-
-## How to run
-```bash
-npm install
-npm run dev
-```
-
-## How to deploy
-```bash
-npm run deploy
-```
-This builds to `dist/` and pushes to `gh-pages` branch. Enable Pages in repo settings to serve from `gh-pages`.
+# Commit Roast — Dev Notes
 
 ## Architecture
-- **GitHub API** (free, no key) — fetches public commit history
-- **Gemini 2.0 Flash API** (bring your own key) — analyzes commit personality
-- **html2canvas** — renders the card as a downloadable PNG
-- No backend, no database, no user data stored
+- Vite + React + TypeScript + Tailwind
+- Multi-provider AI (OpenAI / Gemini / Anthropic)
+- GitHub API (free, no key)
+- html2canvas for PNG export
+- Deployed to GitHub Pages
 
-## Key design decisions
-- Retro/vaporwave aesthetic with CRT scanlines — stands out, hooks engagement
-- Bring your own API key — no backend costs, security concerns eliminated
-- GitHub Pages deployable — zero infrastructure
-- Open graph tags planned for social sharing of cards
+## Key decisions
+- **No backend** — API calls go directly from browser to provider
+- **Bring your own key** — users paste their own API key
+- **Local storage** — keys stored only in memory (React state), cleared on refresh
+
+## Providers
+| Provider | Model | Endpoint |
+|----------|-------|----------|
+| OpenAI | gpt-4o-mini | api.openai.com |
+| Gemini | gemini-1.5-flash | generativelanguage.googleapis.com |
+| Anthropic | claude-3-haiku | api.anthropic.com |

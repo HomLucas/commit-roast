@@ -1,15 +1,12 @@
-import type { PersonalityResult } from './gemini'
+import type { PersonalityResult } from './api'
 
-function MoodBar({ score }: { score: number }) {
-  const color =
-    score >= 70 ? 'from-fuchsia-500 to-cyan-400' :
-    score >= 40 ? 'from-amber-500 to-fuchsia-400' :
-    'from-red-500 to-amber-400'
+function Bar({ score }: { score: number }) {
+  const hue = score >= 70 ? 300 : score >= 40 ? 40 : 0
   return (
-    <div className="w-full h-3 bg-white/5 rounded-full overflow-hidden border border-white/10">
+    <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
       <div
-        className={`h-full rounded-full bg-gradient-to-r ${color} transition-all duration-1000`}
-        style={{ width: `${score}%` }}
+        className="h-full rounded-full transition-all duration-1000"
+        style={{ width: `${score}%`, background: `hsl(${hue}, 80%, 55%)` }}
       />
     </div>
   )
@@ -17,91 +14,81 @@ function MoodBar({ score }: { score: number }) {
 
 export default function Card({ username, result }: { username: string; result: PersonalityResult }) {
   return (
-    <div className="poster-grid card-glow border border-white/10 rounded-2xl p-8 sm:p-10 relative overflow-hidden">
-      {/* Decorative corner brackets */}
-      <div className="absolute top-4 left-4 text-fuchsia-400/40 font-pixel text-2xl">╔══</div>
-      <div className="absolute top-4 right-4 text-fuchsia-400/40 font-pixel text-2xl">══╗</div>
-      <div className="absolute bottom-4 left-4 text-fuchsia-400/40 font-pixel text-2xl">╚══</div>
-      <div className="absolute bottom-4 right-4 text-fuchsia-400/40 font-pixel text-2xl">══╝</div>
+    <div className="poster-grid card-glow border border-white/5 rounded-2xl p-6 sm:p-8 relative overflow-hidden">
+      {/* Corner brackets */}
+      <div className="absolute top-3 left-3 text-fuchsia-400/30 font-pixel text-base sm:text-lg leading-none">╔══</div>
+      <div className="absolute top-3 right-3 text-fuchsia-400/30 font-pixel text-base sm:text-lg leading-none">══╗</div>
+      <div className="absolute bottom-3 left-3 text-fuchsia-400/30 font-pixel text-base sm:text-lg leading-none">╚══</div>
+      <div className="absolute bottom-3 right-3 text-fuchsia-400/30 font-pixel text-base sm:text-lg leading-none">══╝</div>
 
-      {/* Username */}
-      <div className="text-center mb-6">
-        <div className="text-fuchsia-400/50 font-pixel text-sm mb-1">PATIENT PROFILE</div>
-        <h2 className="font-retro text-xl sm:text-2xl text-white glitch">@{username}</h2>
+      {/* Patient header */}
+      <div className="text-center mb-5">
+        <p className="text-fuchsia-400/40 font-pixel text-xs tracking-widest mb-1">PATIENT</p>
+        <h2 className="font-retro text-base sm:text-lg text-white">@{username}</h2>
       </div>
 
-      {/* Personality Type */}
-      <div className="text-center mb-6">
-        <div className="inline-block px-4 py-2 bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-lg mb-2">
-          <span className="font-pixel text-cyan-300 text-sm">CODING PERSONALITY</span>
+      {/* Personality type */}
+      <div className="text-center mb-5">
+        <div className="inline-block px-3 py-1 bg-fuchsia-500/10 rounded-md mb-2">
+          <p className="text-cyan-300/60 font-pixel text-xs tracking-wider">CODING PERSONALITY</p>
         </div>
-        <h3 className="font-retro text-lg sm:text-xl text-fuchsia-300 leading-relaxed">
-          {result.type}
-        </h3>
-        <p className="font-pixel text-cyan-300/70 text-sm mt-1">{result.subtitle}</p>
+        <h3 className="font-retro text-base sm:text-lg text-fuchsia-300 leading-snug">{result.type}</h3>
+        <p className="text-cyan-300/50 font-pixel text-sm mt-1">{result.subtitle}</p>
       </div>
 
-      {/* Mood Score */}
-      <div className="mb-6">
+      {/* Mood */}
+      <div className="mb-5">
         <div className="flex justify-between items-center mb-2">
-          <span className="font-pixel text-cyan-300 text-sm">MOOD SCORE</span>
-          <span className="font-retro text-lg text-white">
-            {result.moodScore}%
-          </span>
-          <span className="font-pixel text-fuchsia-300 text-sm">{result.moodLabel}</span>
+          <span className="text-cyan-300/60 font-pixel text-xs tracking-wider">MOOD</span>
+          <span className="text-white font-semibold text-sm">{result.moodScore}%</span>
+          <span className="text-fuchsia-300/80 font-pixel text-xs">{result.moodLabel}</span>
         </div>
-        <MoodBar score={result.moodScore} />
+        <Bar score={result.moodScore} />
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-3 gap-3 mb-6">
-        <div className="bg-white/5 rounded-lg p-3 text-center border border-white/5">
-          <div className="font-retro text-lg text-fuchsia-300">{result.stats.totalCommits}</div>
-          <div className="font-pixel text-xs text-gray-500 mt-1">COMMITS</div>
-        </div>
-        <div className="bg-white/5 rounded-lg p-3 text-center border border-white/5">
-          <div className="font-retro text-lg text-cyan-300">{result.stats.peakHour}</div>
-          <div className="font-pixel text-xs text-gray-500 mt-1">PRIME TIME</div>
-        </div>
-        <div className="bg-white/5 rounded-lg p-3 text-center border border-white/5">
-          <div className="font-retro text-lg text-fuchsia-300">{result.stats.favoriteDay}</div>
-          <div className="font-pixel text-xs text-gray-500 mt-1">FAVORITE DAY</div>
-        </div>
+      {/* Stats row */}
+      <div className="grid grid-cols-3 gap-2 mb-5">
+        {[
+          { label: 'COMMITS', value: result.stats.totalCommits, color: 'text-fuchsia-300' },
+          { label: 'PRIME TIME', value: result.stats.peakHour, color: 'text-cyan-300' },
+          { label: 'FAV DAY', value: result.stats.favoriteDay, color: 'text-fuchsia-300' },
+        ].map((s) => (
+          <div key={s.label} className="bg-white/[0.03] rounded-lg p-3 text-center border border-white/[0.05]">
+            <div className={`font-semibold text-sm ${s.color}`}>{s.value}</div>
+            <div className="text-gray-500 font-pixel text-[10px] mt-1 tracking-wider">{s.label}</div>
+          </div>
+        ))}
       </div>
 
-      {/* Top Commits */}
-      <div className="mb-6">
-        <div className="text-center mb-3">
-          <span className="font-pixel text-cyan-300/50 text-xs">CONFESSIONAL — TOP OFFENSES</span>
-        </div>
+      {/* Top commits */}
+      <div className="mb-4">
+        <p className="text-cyan-300/40 font-pixel text-[10px] tracking-widest text-center mb-2">CONFESSIONAL</p>
         {result.topCommits.map((msg, i) => (
-          <div key={i} className="bg-white/[0.03] border border-white/[0.06] rounded-lg p-3 mb-2">
-            <div className="flex items-start gap-2">
-              <span className="font-pixel text-fuchsia-400 text-lg mt-0.5">#{i + 1}</span>
-              <span className="font-pixel text-white/80 text-sm leading-relaxed">&ldquo;{msg}&rdquo;</span>
-            </div>
+          <div key={i} className="bg-white/[0.02] border border-white/[0.06] rounded-lg px-3 py-2.5 mb-1.5">
+            <p className="text-white/70 font-pixel text-xs sm:text-sm leading-relaxed">
+              <span className="text-fuchsia-400/60 mr-1.5">#{i + 1}</span>
+              &ldquo;{msg}&rdquo;
+            </p>
           </div>
         ))}
       </div>
 
       {/* Diagnosis */}
-      <div className="mb-4 p-4 bg-cyan-500/5 border border-cyan-500/20 rounded-lg">
-        <div className="font-pixel text-cyan-300 text-xs mb-2">DIAGNOSIS</div>
-        <p className="font-pixel text-white/70 text-sm leading-relaxed">{result.diagnosis}</p>
+      <div className="mb-3 p-3.5 bg-cyan-500/5 rounded-lg border border-cyan-500/10">
+        <p className="text-cyan-300/60 font-pixel text-[10px] tracking-wider mb-1">DIAGNOSIS</p>
+        <p className="text-white/60 font-pixel text-xs sm:text-sm leading-relaxed">{result.diagnosis}</p>
       </div>
 
       {/* Prescription */}
-      <div className="p-4 bg-fuchsia-500/5 border border-fuchsia-500/20 rounded-lg">
-        <div className="font-pixel text-fuchsia-300 text-xs mb-2">PRESCRIPTION</div>
-        <p className="font-pixel text-white/70 text-sm leading-relaxed">{result.prescription}</p>
+      <div className="p-3.5 bg-fuchsia-500/5 rounded-lg border border-fuchsia-500/10">
+        <p className="text-fuchsia-300/60 font-pixel text-[10px] tracking-wider mb-1">PRESCRIPTION</p>
+        <p className="text-white/60 font-pixel text-xs sm:text-sm leading-relaxed">{result.prescription}</p>
       </div>
 
       {/* Footer */}
-      <div className="mt-6 pt-4 border-t border-white/5 text-center">
-        <span className="font-pixel text-[8px] text-gray-600">
-          GENERATED BY COMMITCONFESSIONS — your sins are valid
-        </span>
-      </div>
+      <p className="text-gray-700 font-pixel text-[8px] text-center mt-4 pt-3 border-t border-white/[0.03]">
+        GENERATED BY COMMIT ROAST
+      </p>
     </div>
   )
 }

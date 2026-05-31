@@ -15,7 +15,6 @@ export default function App() {
   const [username, setUsername] = useState('')
   const [provider, setProvider] = useState<ProviderType>('openai')
   const [apiKey, setApiKey] = useState('')
-  const [githubToken, setGithubToken] = useState('')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<PersonalityResult | null>(null)
   const [error, setError] = useState('')
@@ -34,7 +33,7 @@ export default function App() {
     if (!k) { setError('Enter your API key'); return }
     setLoading(true)
     try {
-      const commits = await fetchCommits(u, githubToken.trim() || undefined)
+      const commits = await fetchCommits(u)
       setCommitsCount(commits.length)
       const personality = await analyzePersonality(provider, k, commits)
       setResult(personality)
@@ -76,13 +75,6 @@ export default function App() {
             onChange={(e) => setUsername(e.target.value)}
             placeholder="GitHub username"
             className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-500/50 focus:ring-1 focus:ring-fuchsia-500/20 transition-all text-sm"
-          />
-          <input
-            value={githubToken}
-            onChange={(e) => setGithubToken(e.target.value)}
-            type="password"
-            placeholder="GitHub token (optional — 5,000 req/hr instead of 60)"
-            className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-600 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 transition-all text-xs"
           />
           <div className="flex gap-2">
           <select

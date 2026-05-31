@@ -9,12 +9,16 @@ Privacy-focused flight deal scanner with points conversion tracking.
 ```powershell
 cd backend
 python -m venv venv
+
+# PowerShell may block scripts — run this once per terminal:
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+
 .\venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 uvicorn src.main:app --reload
 ```
 
-API available at `http://localhost:8000` — Swagger docs at `/api/docs`.
+API at `http://localhost:8000` — Swagger docs at `/api/docs`.
 
 ### Frontend
 
@@ -24,21 +28,43 @@ npm install
 npm run dev
 ```
 
-App available at `http://localhost:3000`.
+App at `http://localhost:3000`.
 
 ## Environment Setup
 
-Copy `.env.example` to `.env` and fill in your API keys:
-
 ```powershell
-cp .env.example .env
+Copy-Item .env.example .env
 ```
 
-Required API keys for flight search:
-- **Amadeus**: `AMADEUS_CLIENT_ID` + `AMADEUS_CLIENT_SECRET` (free tier at [Amadeus Dev Portal](https://developers.amadeus.com))
+Then generate secret keys and fill in `.env`:
+
+```powershell
+# Generate JWT keys
+openssl rand -hex 32
+# Generate encryption key
+python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+```
+
+Required keys for flight search:
+- **Amadeus**: `AMADEUS_CLIENT_ID` + `AMADEUS_CLIENT_SECRET` (free at [Amadeus Dev Portal](https://developers.amadeus.com))
 - **Skyscanner**: `SKYSCANNER_API_KEY` (optional fallback)
 
-The app runs with SQLite by default — no PostgreSQL needed for local development.
+For email alerts, set SMTP in `.env`:
+```
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your_email@gmail.com
+SMTP_PASSWORD=your_app_password
+```
+
+## Local Dev Notes
+
+- **SQLite** by default — no PostgreSQL needed.
+- **Redis** not required — falls back to in-memory cache gracefully.
+- **Rate limiting**: Login 5/min, Register 2/min, Refresh 3/min, Forgot/Reset 2/min.
+- **Token blacklisting**: Logout revokes tokens. Works in-memory or via Redis.
+- **Email**: Only sends if SMTP is configured in `.env`. Otherwise silently skips.
+- **Celery worker**: For periodic alert checking, run `celery -A src.worker worker --beat` separately.
 
 ## Project Structure
 
@@ -46,5 +72,5 @@ The app runs with SQLite by default — no PostgreSQL needed for local developme
 backend/          FastAPI + SQLAlchemy async backend
 frontend/         Next.js 14 frontend
 scripts/          Deployment & security scripts
-docker-compose.yml   Production deployment
+docker-compose.yml   Production deployment (PostgreSQL + Redis)
 ```

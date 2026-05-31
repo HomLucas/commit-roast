@@ -19,13 +19,11 @@ async def lifespan(app: FastAPI):
     logger.info("Starting Flight Scanner API")
     await init_db()
 
-    required_keys = [
-        "amadeus_client_id",
-        "amadeus_client_secret",
-    ]
-    for key in required_keys:
-        if not getattr(settings, key, None):
-            logger.warning(f"Missing API key: {key}")
+    if settings.environment == "production":
+        required_keys = ["skyscanner_api_key", "amadeus_client_id"]
+        for key in required_keys:
+            if not getattr(settings, key, None):
+                logger.warning(f"Missing API key: {key}")
 
     yield
 

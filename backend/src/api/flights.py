@@ -9,6 +9,7 @@ from src.database import get_db
 from src.services.auth import get_current_user
 from src.services.api_clients import AmadeusClient, SkyscannerClient
 from src.services.deal_detector import DealDetector
+from src.services.mock_provider import generate_mock_flights
 from src.models.user import User
 from src.models.flight import FlightDeal
 from src.schemas.flight import (
@@ -39,44 +40,53 @@ async def search_flights(
 
         all_results = []
         api_errors = []
+        used_mock = False
 
+        # Try Skyscanner first
         try:
-            async with amadeus:
-                amadeus_results = await amadeus.search_flights(
+            async with skyscanner:
+                session_token = await skyscanner.create_search(
                     origin=search_query.origin,
                     destination=search_query.destination,
                     departure_date=search_query.departure_date.isoformat(),
                     return_date=search_query.return_date.isoformat() if search_query.return_date else None,
                     adults=search_query.passengers,
-                    max_results=search_query.limit or 50,
-                    max_price=search_query.max_price,
                 )
-                all_results.extend(amadeus_results)
+                skyscanner_results = await skyscanner.poll_results(session_token)
+                all_results.extend(skyscanner_results)
         except Exception as e:
-            api_errors.append(f"Amadeus: {str(e)}")
-            logger.error(f"Amadeus API error: {e}")
+            api_errors.append(f"Skyscanner: {str(e)}")
+            logger.warning(f"Skyscanner API error: {e}")
 
-        if not all_results and search_query.include_alternative_sources:
+        # Try Amadeus as fallback
+        if not all_results:
             try:
-                async with skyscanner:
-                    session_token = await skyscanner.create_search(
+                async with amadeus:
+                    amadeus_results = await amadeus.search_flights(
                         origin=search_query.origin,
                         destination=search_query.destination,
                         departure_date=search_query.departure_date.isoformat(),
                         return_date=search_query.return_date.isoformat() if search_query.return_date else None,
                         adults=search_query.passengers,
+                        max_results=search_query.limit or 50,
+                        max_price=search_query.max_price,
                     )
-                    skyscanner_results = await skyscanner.poll_results(session_token)
-                    all_results.extend(skyscanner_results)
+                    all_results.extend(amadeus_results)
             except Exception as e:
-                api_errors.append(f"Skyscanner: {str(e)}")
-                logger.error(f"Skyscanner API error: {e}")
+                api_errors.append(f"Amadeus: {str(e)}")
+                logger.warning(f"Amadeus API error: {e}")
 
+        # Mock data as last resort
         if not all_results:
-            raise HTTPException(
-                status_code=503,
-                detail=f"No results available. Errors: {api_errors}"
+            logger.info("No real API results, falling back to mock data")
+            all_results = generate_mock_flights(
+                origin=search_query.origin,
+                destination=search_query.destination,
+                departure_date=search_query.departure_date.isoformat(),
+                return_date=search_query.return_date.isoformat() if search_query.return_date else None,
+                count=search_query.limit or 20,
             )
+            used_mock = True
 
         analyzed_results = []
         for flight in all_results:
@@ -116,6 +126,7 @@ async def search_flights(
             results=[FlightDealResponse(**r) for r in analyzed_results[:search_query.limit or 50]],
             api_errors=api_errors if api_errors else None,
             search_timestamp=datetime.utcnow(),
+            used_mock=used_mock,
         )
 
     except Exception as e:

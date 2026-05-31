@@ -45,9 +45,11 @@ openssl rand -hex 32
 python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
 ```
 
-Required keys for flight search:
-- **Amadeus**: `AMADEUS_CLIENT_ID` + `AMADEUS_CLIENT_SECRET` (free at [Amadeus Dev Portal](https://developers.amadeus.com))
-- **Skyscanner**: `SKYSCANNER_API_KEY` (optional fallback)
+No API keys required for development — app generates realistic mock flight data automatically when no real API is available.
+
+For real data, add API keys (tried in order):
+- **Skyscanner**: `SKYSCANNER_API_KEY` (primary)
+- **Amadeus**: `AMADEUS_CLIENT_ID` + `AMADEUS_CLIENT_SECRET` (fallback)
 
 For email alerts, set SMTP in `.env`:
 ```

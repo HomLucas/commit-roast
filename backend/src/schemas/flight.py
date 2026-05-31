@@ -48,6 +48,7 @@ class FlightSearchResponse(BaseModel):
     results: List[FlightDealResponse]
     api_errors: Optional[List[str]] = None
     search_timestamp: datetime
+    used_mock: bool = False
 
 
 class DealAnalysisResponse(BaseModel):

@@ -53,12 +53,12 @@ async function callOpenAI(key: string, prompt: string): Promise<PersonalityResul
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
-    body: JSON.stringify({ model: 'gpt-4o', messages: [{ role: 'user', content: prompt }], temperature: 1.0, max_tokens: 1024 }),
+    body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], temperature: 1.0, max_tokens: 1024 }),
   })
   if (!res.ok) {
     const body = await res.text()
     if (res.status === 401) throw new Error('Invalid OpenAI key. Get one at platform.openai.com.')
-    if (res.status === 429) throw new Error('OpenAI quota exceeded. Check billing at platform.openai.com.')
+    if (res.status === 429) throw new Error('OpenAI out of credits. Free $5 trial credits may be used up.')
     throw new Error(`OpenAI error: ${body.slice(0, 200)}`)
   }
   const data = await res.json()
@@ -69,7 +69,7 @@ async function callOpenAI(key: string, prompt: string): Promise<PersonalityResul
 
 async function callGemini(key: string, prompt: string): Promise<PersonalityResult> {
   const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -82,7 +82,7 @@ async function callGemini(key: string, prompt: string): Promise<PersonalityResul
   if (!res.ok) {
     const body = await res.text()
     if (res.status === 403 || res.status === 400) throw new Error('Invalid Gemini key. Get one free at aistudio.google.com.')
-    if (res.status === 429) throw new Error('Gemini quota exceeded. Make sure your billing account is linked to the same Google Cloud project as this API key.')
+    if (res.status === 429) throw new Error('Gemini quota exceeded (1500/day free). Make sure billing is enabled on your project at console.cloud.google.com/billing.')
     throw new Error(`Gemini error: ${body.slice(0, 200)}`)
   }
   const data = await res.json()
@@ -95,12 +95,12 @@ async function callAnthropic(key: string, prompt: string): Promise<PersonalityRe
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
-    body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1024, messages: [{ role: 'user', content: prompt }] }),
+    body: JSON.stringify({ model: 'claude-3-5-haiku-20241022', max_tokens: 1024, messages: [{ role: 'user', content: prompt }] }),
   })
   if (!res.ok) {
     const body = await res.text()
     if (res.status === 401) throw new Error('Invalid Anthropic key. Get one at console.anthropic.com.')
-    if (res.status === 429) throw new Error('Anthropic quota exceeded. Check billing at console.anthropic.com.')
+    if (res.status === 429) throw new Error('Anthropic out of credits. Free $5 trial may be used up.')
     throw new Error(`Anthropic error: ${body.slice(0, 200)}`)
   }
   const data = await res.json()

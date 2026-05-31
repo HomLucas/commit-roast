@@ -2,7 +2,7 @@
 
 **Your git therapy session.** Paste a GitHub username, get an AI-generated coding personality card.
 
-[Try it live](https://homlucas.github.io/FlightScanner/) (requires a free Gemini API key)
+[Try it live](https://homlucas.github.io/commit-roast/) (requires a free Gemini API key)
 
 ## How it works
 1. Enter any GitHub username

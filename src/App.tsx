@@ -120,7 +120,7 @@ export default function App() {
       <div className="max-w-md text-center mb-8">
         <p className="text-gray-600 font-pixel text-xs leading-relaxed">
           🔒 Your API key stays in your browser. It is sent directly to {selected.label}'s API — never stored, logged, or sent anywhere else.
-          {' '}<a href="https://github.com/HomLucas/FlightScanner" target="_blank" rel="noopener noreferrer" className="text-cyan-500/70 hover:text-cyan-400 underline">View source</a>
+          {' '}<a href="https://github.com/HomLucas/commit-roast" target="_blank" rel="noopener noreferrer" className="text-cyan-500/70 hover:text-cyan-400 underline">View source</a>
         </p>
       </div>
 

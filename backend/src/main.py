@@ -9,6 +9,7 @@ from slowapi.errors import RateLimitExceeded
 from loguru import logger
 from src.config import settings
 from src.database import init_db, close_db
+from src.services.redis_client import close_redis
 
 limiter = Limiter(key_func=get_remote_address)
 
@@ -30,6 +31,7 @@ async def lifespan(app: FastAPI):
 
     logger.info("Shutting down Flight Scanner API")
     await close_db()
+    await close_redis()
 
 
 app = FastAPI(

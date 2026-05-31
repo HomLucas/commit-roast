@@ -1,11 +1,16 @@
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from src.database import get_db
 from src.models.user import User
 from src.services.auth import AuthService, get_current_user
+from src.services.token_blacklist import blacklist_token
+from src.services.email import send_password_reset
+from src.services.redis_client import cache
 from src.schemas.auth import (
     Token,
     UserCreate,
@@ -14,10 +19,13 @@ from src.schemas.auth import (
 )
 
 router = APIRouter()
+limiter = Limiter(key_func=get_remote_address)
 
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@limiter.limit("2/minute")
 async def register(
+    request: Request,
     user_data: UserCreate,
     db: AsyncSession = Depends(get_db),
 ):
@@ -48,7 +56,9 @@ async def register(
 
 
 @router.post("/login", response_model=Token)
+@limiter.limit("5/minute")
 async def login(
+    request: Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(get_db),
 ):
@@ -90,11 +100,15 @@ async def login(
 
 
 @router.post("/refresh", response_model=Token)
+@limiter.limit("3/minute")
 async def refresh_token(
+    request: Request,
     refresh: RefreshToken,
     db: AsyncSession = Depends(get_db),
 ):
     payload = AuthService.decode_token(refresh.refresh_token, "refresh")
+
+    await blacklist_token(refresh.refresh_token)
 
     user_id = payload.get("sub")
     if not user_id:
@@ -127,15 +141,76 @@ async def refresh_token(
     )
 
 
+@router.post("/logout")
+async def logout(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+):
+    auth_header = request.headers.get("Authorization", "")
+    token = auth_header.replace("Bearer ", "")
+    if token:
+        await blacklist_token(token)
+    return {"message": "Successfully logged out"}
+
+
 @router.get("/me", response_model=UserResponse)
 async def get_current_user_info(
+    request: Request,
     current_user: User = Depends(get_current_user),
 ):
     return UserResponse.from_orm(current_user)
 
 
-@router.post("/logout")
-async def logout(
-    current_user: User = Depends(get_current_user),
+@router.post("/forgot-password")
+@limiter.limit("2/minute")
+async def forgot_password(
+    request: Request,
+    email: str,
+    db: AsyncSession = Depends(get_db),
 ):
-    return {"message": "Successfully logged out"}
+    result = await db.execute(select(User).where(User.email == email))
+    user = result.scalar_one_or_none()
+    if not user:
+        return {"message": "If that email exists, a reset link has been sent"}
+
+    import uuid
+    reset_token = str(uuid.uuid4())
+    c = await cache()
+    await c.setex(f"pwdreset:{reset_token}", 3600, str(user.id))
+
+    frontend_url = (settings.cors_origins or ["http://localhost:3000"])[0]
+    reset_link = f"{frontend_url}/reset-password?token={reset_token}"
+
+    await send_password_reset(
+        user_email=user.email,
+        username=user.username,
+        reset_link=reset_link,
+    )
+
+    return {"message": "If that email exists, a reset link has been sent"}
+
+
+@router.post("/reset-password")
+@limiter.limit("2/minute")
+async def reset_password(
+    request: Request,
+    token: str,
+    new_password: str,
+    db: AsyncSession = Depends(get_db),
+):
+    c = await cache()
+    user_id_str = await c.get(f"pwdreset:{token}")
+    if not user_id_str:
+        raise HTTPException(status_code=400, detail="Invalid or expired reset token")
+
+    user_id = int(user_id_str)
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user.hashed_password = AuthService.hash_password(new_password)
+    await db.commit()
+    await c.delete(f"pwdreset:{token}")
+
+    return {"message": "Password reset successfully"}

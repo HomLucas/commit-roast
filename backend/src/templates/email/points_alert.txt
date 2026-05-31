@@ -1,0 +1,6 @@
+⭐ Points Deal Available
+
+Hi {{ username }},
+
+{{ origin }} → {{ destination }} for {{ points_required }} {{ points_program }} pts
+Cash price: {{ cash_price }} | Value: {{ cpp }}¢/pt

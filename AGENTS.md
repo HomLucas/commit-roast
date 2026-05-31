@@ -70,6 +70,24 @@
 
 ---
 
+## CommitConfessions (standalone app)
+
+A separate project in `commitconfessions/` — not related to FlightScanner.
+
+**To develop:**
+```bash
+cd commitconfessions
+npm install
+npm run dev
+```
+
+**To deploy to GitHub Pages:**
+```bash
+cd commitconfessions
+npm run deploy
+```
+This builds to `dist/` and pushes to the `gh-pages` branch. Ensure your repo settings have Pages enabled for the `gh-pages` branch.
+
 ## Pending Improvements
 
 - **Redis for production**: Token blacklist and rate limiter currently use in-memory fallback when Redis is unavailable. Deploy with Redis for persistence.

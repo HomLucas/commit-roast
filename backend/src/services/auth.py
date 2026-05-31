@@ -10,6 +10,13 @@ from src.config import settings
 from src.database import get_db
 from src.models.user import User
 
+
+def _resolve_key(key) -> str:
+    if hasattr(key, 'get_secret_value'):
+        return key.get_secret_value()
+    return str(key)
+
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
@@ -36,7 +43,7 @@ class AuthService:
 
         return jwt.encode(
             to_encode,
-            settings.jwt_secret_key.get_secret_value(),
+            _resolve_key(settings.jwt_secret_key),
             algorithm="HS256"
         )
 
@@ -55,16 +62,16 @@ class AuthService:
 
         return jwt.encode(
             to_encode,
-            settings.jwt_refresh_secret_key.get_secret_value(),
+            _resolve_key(settings.jwt_refresh_secret_key),
             algorithm="HS256"
         )
 
     @staticmethod
     def decode_token(token: str, token_type: str = "access") -> Dict[str, Any]:
         secret = (
-            settings.jwt_secret_key.get_secret_value()
+            _resolve_key(settings.jwt_secret_key)
             if token_type == "access"
-            else settings.jwt_refresh_secret_key.get_secret_value()
+            else _resolve_key(settings.jwt_refresh_secret_key)
         )
 
         try:

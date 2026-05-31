@@ -13,7 +13,10 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 class DataEncryption:
 
     def __init__(self):
-        key = settings.encryption_key.get_secret_value().encode()
+        raw_key = settings.encryption_key
+        if hasattr(raw_key, 'get_secret_value'):
+            raw_key = raw_key.get_secret_value()
+        key = raw_key.encode()
         if len(key) != 44:
             key = base64.urlsafe_b64encode(
                 hashlib.sha256(key).digest()
@@ -39,6 +42,12 @@ class DataEncryption:
         }
 
 
+def _resolve_val(val):
+    if hasattr(val, 'get_secret_value'):
+        return val.get_secret_value()
+    return str(val)
+
+
 class APIKeyManager:
 
     def __init__(self):
@@ -49,9 +58,13 @@ class APIKeyManager:
         secret_attr = f"{service}_client_secret"
 
         if hasattr(settings, key_attr):
-            return getattr(settings, key_attr).get_secret_value()
+            val = getattr(settings, key_attr)
+            if val:
+                return _resolve_val(val)
         elif hasattr(settings, secret_attr):
-            return getattr(settings, secret_attr).get_secret_value()
+            val = getattr(settings, secret_attr)
+            if val:
+                return _resolve_val(val)
         return None
 
     def verify_api_key(self, service: str, key_hash: str) -> bool:

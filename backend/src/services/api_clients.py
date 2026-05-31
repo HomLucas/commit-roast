@@ -43,8 +43,10 @@ class AmadeusClient(BaseAPIClient):
         wait=wait_exponential(multiplier=1, min=4, max=10)
     )
     async def authenticate(self):
-        client_id = settings.amadeus_client_id.get_secret_value()
-        client_secret = settings.amadeus_client_secret.get_secret_value()
+        raw_id = settings.amadeus_client_id
+        raw_secret = settings.amadeus_client_secret
+        client_id = raw_id.get_secret_value() if hasattr(raw_id, 'get_secret_value') else str(raw_id)
+        client_secret = raw_secret.get_secret_value() if hasattr(raw_secret, 'get_secret_value') else str(raw_secret)
 
         response = await self.client.post(
             f"{self.BASE_URL}/v1/security/oauth2/token",

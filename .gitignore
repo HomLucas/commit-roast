@@ -58,8 +58,8 @@ cover/
 # Django stuff:
 *.log
 local_settings.py
-db.sqlite3
-db.sqlite3-journal
+*.db
+*.sqlite3
 
 # Flask stuff:
 instance/
@@ -126,6 +126,12 @@ ipython_config.py
 
 # PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
 __pypackages__/
+
+# Node
+node_modules/
+.next/
+out/
+.next_build/
 
 # Celery stuff
 celerybeat-schedule

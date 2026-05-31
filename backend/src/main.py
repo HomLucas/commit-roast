@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 from datetime import datetime
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -53,15 +53,16 @@ app.add_middleware(
     max_age=3600,
 )
 
+allowed_hosts = ["*"] if settings.debug else ["localhost", "127.0.0.1", "0.0.0.0"]
 app.add_middleware(
     TrustedHostMiddleware,
-    allowed_hosts=["*"] if settings.debug else settings.cors_origins,
+    allowed_hosts=allowed_hosts,
 )
 
 
 @app.get("/")
 @limiter.limit("10/minute")
-async def root():
+async def root(request: Request):
     return {
         "service": "Flight Scanner API",
         "version": "0.1.0",

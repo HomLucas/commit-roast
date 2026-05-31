@@ -3,14 +3,29 @@ from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.pool import NullPool
 from src.config import settings
 
-engine = create_async_engine(
-    settings.database_url.get_secret_value(),
-    echo=settings.debug,
-    poolclass=NullPool if settings.environment == "development" else None,
-    pool_size=20,
-    max_overflow=10,
-    pool_pre_ping=True,
-)
+
+def _resolve_database_url() -> str:
+    raw = settings.database_url
+    if hasattr(raw, 'get_secret_value'):
+        return raw.get_secret_value()
+    return str(raw)
+
+
+database_url = _resolve_database_url()
+is_sqlite = database_url.startswith("sqlite")
+
+engine_kwargs = {"echo": settings.debug}
+
+if is_sqlite:
+    engine_kwargs["poolclass"] = NullPool
+else:
+    engine_kwargs["pool_size"] = 20
+    engine_kwargs["max_overflow"] = 10
+    engine_kwargs["pool_pre_ping"] = True
+    if settings.environment == "development":
+        engine_kwargs["poolclass"] = NullPool
+
+engine = create_async_engine(database_url, **engine_kwargs)
 
 async_session = async_sessionmaker(
     engine,
